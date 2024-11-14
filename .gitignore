@@ -1,0 +1,15 @@
+.vscode/
+bin/
+build/
+junk/
+*.log
+*.tex
+*.txt
+plotting/plots/
+__pycache__/
+datacards*
+results/
+workspaces/
+*model.hxx
+*model.dat
+limits_C2V.json
