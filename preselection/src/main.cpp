@@ -24,10 +24,11 @@ struct MyArgs : public argparse::Args {
 };
 
 void runDataAnalysis(RNode df, MyArgs args, std::string output_file) {
-    auto df1 = defineCorrectedCols(df);
+    auto df_ = defineCorrectedCols(df);
+    auto df1 = ObjectSelections(df_);
     auto df_metcorr = METPhiCorrections(cset_met_2016preVFP, cset_met_2016postVFP, cset_met_2017, cset_met_2018, df1);
-    auto df_preselec = applyPreSelections(df_metcorr);
-    auto df_weights = applyDataWeights(df_preselec);
+    auto df_event = EventSelections(df_metcorr);
+    auto df_weights = applyDataWeights(df_event);
     
     std::vector<std::string> cuts = {"passCut1", "passCut2", "passCut3", "passCut4", "passCut5", "passCut6", "passCut7", "passCut8", "passCut9", "passCut8_cr", "passCut9_cr"};
     auto cutflow = Cutflow(df_weights, cuts);
@@ -42,7 +43,8 @@ void runDataAnalysis(RNode df, MyArgs args, std::string output_file) {
 
 void runMCAnalysis(RNode df, MyArgs args, std::string output_file) {
     // corrections
-    auto df1 = defineCorrectedCols(df);
+    auto df_ = defineCorrectedCols(df);
+    auto df1 = ObjectSelections(df_);
     // apply pre preselection corrections
     df1 = METPhiCorrections(cset_met_2016preVFP, cset_met_2016postVFP, cset_met_2017, cset_met_2018, df1);
     if (args.JER) {
@@ -53,14 +55,14 @@ void runMCAnalysis(RNode df, MyArgs args, std::string output_file) {
         df1 = JetEnergyCorrection(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, df1, args.JEC_type, args.variation);
     }
     
-    auto df_preselec = applyPreSelections(df1);
+    auto df_event = EventSelections(df1);
 
     if (args.JMS) {
-        df_preselec = JMS_Corrections(cset_jms, df_preselec, args.variation);
+        df_event = JMS_Corrections(cset_jms, df_event, args.variation);
     } else if (args.JMR) {
-        df_preselec = JMR_Corrections(cset_jmr, df_preselec, args.variation);
+        df_event = JMR_Corrections(cset_jmr, df_event, args.variation);
     }
-    auto df_weights = applyMCWeights(df_preselec);
+    auto df_weights = applyMCWeights(df_event);
     
     std::vector<std::string> cuts = {"passCut1", "passCut2", "passCut3", "passCut4", "passCut5", "passCut6", "passCut7", "passCut8", "passCut9", "passCut8_cr", "passCut9_cr"};
     auto cutflow = Cutflow(df_weights, cuts);

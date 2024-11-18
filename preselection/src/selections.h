@@ -8,16 +8,17 @@
 
 using RNode = ROOT::RDF::RNode;
 
-RNode flagSelections(RNode df);
-RNode triggerSelections(RNode df);
-RNode electronSelections(RNode df);
-RNode muonSelections(RNode df);
-RNode leptonSelections(RNode df);
-RNode higgsSelections(RNode df);
-RNode WZSelections(RNode df);
+RNode METFilters(RNode df);
+RNode TriggerSelections(RNode df);
+RNode ElectronSelections(RNode df);
+RNode MuonSelections(RNode df);
+RNode LeptonSelections(RNode df);
+RNode HbbSelections(RNode df);
+RNode VqqSelections(RNode df);
 RNode AK4Selections(RNode df);
 RNode VBSJetsSelections(RNode df);
 
-RNode applyPreSelections(RNode df);
+RNode ObjectSelections(RNode df);
+RNode EventSelections(RNode df);
 
 #endif // SELECTIONS_H

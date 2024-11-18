@@ -5,8 +5,8 @@ junk/
 *.log
 *.tex
 *.txt
-plotting/plots/
 __pycache__/
+plotting/plots/
 datacards*
 results/
 workspaces/

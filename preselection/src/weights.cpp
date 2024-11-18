@@ -4,50 +4,6 @@ RNode goodRun(lumiMask golden, RNode df){
     auto goldenjson = [golden](unsigned int &run, unsigned int &luminosityBlock){return golden.accept(run, luminosityBlock);};
     return df.Define("goldenJSON", goldenjson, {"run", "luminosityBlock"});
 }
-
-RNode EWKCorrections(correction::CorrectionSet cset_ewk, RNode df){
-    auto eval_correction = [cset_ewk] (RVec<float> LHEPart_pt, RVec<float> LHEPart_eta, RVec<float> LHEPart_phi, RVec<float> LHEPart_mass, RVec<int> LHEPart_pdgId, std::string sample_type) {
-        if(sample_type != "EWK") return 1.;
-        else{
-            TLorentzVector TEWKq1, TEWKq2, TEWKlep, TEWKnu;
-            TEWKq1.SetPtEtaPhiM(LHEPart_pt[4],LHEPart_eta[4],LHEPart_phi[4],LHEPart_mass[4]);
-            TEWKq2.SetPtEtaPhiM(LHEPart_pt[5],LHEPart_eta[5],LHEPart_phi[5],LHEPart_mass[5]);
-            TEWKlep.SetPtEtaPhiM(LHEPart_pt[2],LHEPart_eta[2],LHEPart_phi[2],LHEPart_mass[2]);
-            TEWKnu.SetPtEtaPhiM(LHEPart_pt[3],LHEPart_eta[3],LHEPart_phi[3],LHEPart_mass[3]);
-            int chargequark[7] = {0,-1,2,-1,2,-1,2};
-            int EWKpdgq1 = LHEPart_pdgId[4];
-            int EWKpdgq2 = LHEPart_pdgId[5];
-            int EWKsignq1 = (EWKpdgq1 > 0) - (EWKpdgq1 < 0);
-            int EWKsignq2 = (EWKpdgq2 > 0) - (EWKpdgq2 < 0);
-            double EWKMass_q12 = (TEWKq1 + TEWKq2).M();
-            double EWKMass_lnu = (TEWKlep + TEWKnu).M();
-            double fabscharge=(fabs((double)(EWKsignq1 * chargequark[abs(EWKpdgq1)] + (EWKsignq2 * chargequark[abs(EWKpdgq2)]))))/3;
-            double EWKbjet_pt = -999;
-            if(fabscharge ==1){
-                if( EWKMass_q12 >= 70 && EWKMass_q12 < 90  && 
-                    EWKMass_lnu >= 70 && EWKMass_lnu < 90){
-                    return 0.;
-                }
-            }
-            if(EWKMass_q12 >= 95){
-                if( abs(EWKpdgq1) == 5 && abs(EWKpdgq2) == 5){
-                    if(TEWKq1.Pt() > TEWKq2.Pt())  EWKbjet_pt = TEWKq1.Pt();
-                    else                           EWKbjet_pt = TEWKq2.Pt();
-                }else if(abs(EWKpdgq1) == 5){
-                    EWKbjet_pt = TEWKq1.Pt();
-                }else if(abs(EWKpdgq2) == 5){
-                    EWKbjet_pt = TEWKq2.Pt();
-                }
-            }
-            if(EWKbjet_pt > -998){
-                return cset_ewk.at("EWK")->evaluate({EWKbjet_pt});
-            }
-            else return 1.;
-        }
-    };
-    return df.Define("EWKCorrection", eval_correction, {"LHEPart_pt", "LHEPart_eta", "LHEPart_phi", "LHEPart_mass", "LHEPart_pdgId", "sample_type"});
-}
-
 RNode L1PreFiringWeight(RNode df){
     auto eval_correction = [] (float L1prefire, float L1prefireup, float L1prefiredown) {
         return RVec<float>{L1prefire, L1prefireup, L1prefiredown};
@@ -113,7 +69,9 @@ RNode pileupIDScaleFactors(correction::CorrectionSet cset_pileup_2016preVFP, cor
         }
         return pileup_weights;
     };
-    return df.Define("pileupid_weight", eval_correction, {"sample_year", "puIDJets_eta", "puIDJets_pt"});
+    return df.Define("puIDJets_pt", "CorrJet_pt[goodVBSJets || goodJets]")
+            .Define("puIDJets_eta", "Jet_eta[goodVBSJets || goodJets]")
+            .Define("pileupid_weight", eval_correction, {"sample_year", "puIDJets_eta", "puIDJets_pt"});
 }
 
 RNode muonScaleFactors_ID(correction::CorrectionSet cset_muon_2016preVFP, correction::CorrectionSet cset_muon_2016postVFP, correction::CorrectionSet cset_muon_2017, correction::CorrectionSet cset_muon_2018, RNode df){
@@ -740,7 +698,10 @@ RNode applyMCWeights(RNode df) {
     auto df_pnet_h_2017 = PNET_H_ScaleFactors_2017(cset_pnet_h, df_pnet_h_2016postVFP);
     auto df_pnet_h = PNET_H_ScaleFactors_2018(cset_pnet_h, df_pnet_h_2017);
     // btagging sf
-    auto df_btag = df_pnet_h.Define("LnTBJet_hadronFlavour", "Jet_hadronFlavour[LnTBJets]");
+    auto df_btag = df_pnet_h.Define("LnTBJets", "goodJets && Jet_btagDeepFlavB > ak4looseBjetScore && Jet_btagDeepFlavB <= ak4tightBjetScore")
+            .Define("LnTBJet_pt", "CorrJet_pt[LnTBJets]")
+            .Define("LnTBJet_eta", "Jet_eta[LnTBJets]")
+            .Define("LnTBJet_hadronFlavour", "Jet_hadronFlavour[LnTBJets]");
     auto df_btag_hf = bTaggingScaleFactors_HF(cset_btag_2016preVFP, cset_btag_2016postVFP, cset_btag_2017, cset_btag_2018, cset_btag_eff, df_btag);
     auto df_btag_lf = bTaggingScaleFactors_LF(cset_btag_2016preVFP, cset_btag_2016postVFP, cset_btag_2017, cset_btag_2018, cset_btag_eff, df_btag_hf);
     
