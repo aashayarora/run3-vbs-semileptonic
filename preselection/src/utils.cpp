@@ -1,6 +1,21 @@
 #include "utils.h"
 
 /*
+    DEFINE METADATA
+*/
+
+RNode defineMetadata(RNode df){
+    return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
+            .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
+            .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
+            .DefinePerSample("sample_category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_category");})
+            .DefinePerSample("sample_type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_type");})
+            .DefinePerSample("sample_year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_year");})
+            .Define("xsec_weight", "1000 * xsec * lumi / nevents")
+            .Define("isData", "sample_category == \"data\"");
+}
+
+/*
     LUMIMASK
 */
 
@@ -66,24 +81,6 @@ void Cutflow::Print(std::string output_file) {
             printf("%-15s: %10.2f \\pm %10.2f\n", _cuts[i].c_str(), _cutflow[i+1].first.GetValue(), std::sqrt(_cutflow[i+1].second.GetValue()));
         }
     }
-}
-
-/*
-    DEFINE METADATA
-*/
-
-RNode defineMetadata(RNode df){
-    return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
-            .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
-            .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
-            .DefinePerSample("sample_category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_category");})
-            .DefinePerSample("sample_type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_type");})
-            .DefinePerSample("sample_year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_year");})
-            .Define("xsec_weight", "1000 * xsec * lumi / nevents")
-            .Define("isData", "sample_category == \"data\"")
-            .Define("is2016", "sample_year == \"2016preVFP\" || sample_year == \"2016postVFP\"")
-            .Define("is2017", "sample_year == \"2017\"")
-            .Define("is2018", "sample_year == \"2018\"");
 }
 
 /*
@@ -241,5 +238,5 @@ void saveSnapshot(RNode df, const std::string& finalFile, bool isData) {
     if (!isData)
         final_variables.push_back("LHEReweightingWeight");
 
-    df.Snapshot("Events", "/data/userdata/aaarora/output/run2/" + finalFile + ".root", final_variables);
+    df.Snapshot("Events", "/data/userdata/aaarora/output/run3/" + finalFile + ".root", final_variables);
 }

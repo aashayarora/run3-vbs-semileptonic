@@ -3,6 +3,7 @@ import json
 import re
 import argparse
 import uproot
+import concurrent.futures
 
 class Config:
     def __init__(self, sample_category : str, samples: str):
@@ -19,18 +20,16 @@ class Config:
 
     @staticmethod
     def extract_sample_year(sample):
-        if "UL16" in sample and "APV" in sample:
-            return "2016preVFP"
-        elif "UL16" in sample and not "APV" in sample:
-            return "2016postVFP"
-        elif "UL17" in sample or "UL2017" in sample:
-            return "2017"
-        elif "UL18" in sample or "UL2018" in sample:
-            return "2018"
-        elif any(run in sample for run in ["Run2016B", "Run2016C", "Run2016D", "Run2016E", "Run2016F"]) and "HIPM" in sample:
-            return "2016preVFP"
-        elif any(run in sample for run in ["Run2016F", "Run2016G", "Run2016H"]) and not "HIPM" in sample:
-            return "2016postVFP"
+        # Data
+        if any(run in sample for run in ["Run2022C", "Run2022D"]):
+            return "2022Re-recoBCD"
+        elif any(run in sample for run in ["Run2022E", "Run2022F", "Run2022G"]):
+            return "2022Re-recoE+PromptFG"
+        # MC
+        elif "22EE" in sample:
+            return "2022Re-recoE+PromptFG"
+        elif "22" in sample:
+            return "2022Re-recoBCD"
         else:
             raise ValueError(f"Error: year not found for {sample}")
 
@@ -44,10 +43,8 @@ class Config:
     @staticmethod
     def get_lumi(year):
         lumi = {
-            "2016preVFP": 19.52,
-            "2016postVFP": 16.81,
-            "2017": 41.529,
-            "2018": 59.7
+            "2022Re-recoBCD": 7.9804,
+            "2022Re-recoE+PromptFG": 26.6717
         }
         if year in lumi:
             return lumi[year]
@@ -58,12 +55,8 @@ class Config:
     def extract_mc_sample_type(sample_name):
         sample_type_mapping = {
             "DY": "DY",
-            "TTTo": "ttbar",
-            "TT": "ttx",
-            "tt": "ttx",
-            "ST": "ST",
-            "WJets": "WJets",
-            "EWK": "EWK"
+            "TTto": "TTbar",
+            "Wto": "WJets"
         }
         for key, value in sample_type_mapping.items():
             if key in sample_name:
@@ -73,33 +66,40 @@ class Config:
     @staticmethod
     def get_sample_name(sample):
         if "data" in sample:
-            return re.search(r"/([^/]+)_Run20", sample).group(1)
+            match = re.search(r"Run(\d{4}[A-Z])/([A-Za-z]+)", sample)
+            return f"Run{match.group(1)}-{match.group(2)}"
         else:
             return re.search(r"/([^/]+)_TuneCP5", sample).group(1)
 
     def process_samples(self, xsecs):
         for sample in self.samples:
+            print(sample)
             try:
                 sample_name = self.get_sample_name(sample)
                 sample_year = self.extract_sample_year(sample)
-                xsec = self.get_xsec_weight(xsecs, f"{sample_name},{sample_year}") if self.sample_category != "data" else 1.0
+                xsec = self.get_xsec_weight(xsecs, sample_name) if self.sample_category != "data" else 1.0
                 num_events = 0
                 if self.sample_category != "data":
-                    files = glob(f"{sample}/output*.root")
-                    for file in files:
+                    files = glob(f"{sample}/output_3*.root")
+                    def process_file(file):
                         with uproot.open(file) as upf:
-                            num_events += sum(upf["Runs"]["genEventSumw"].array())
+                            return sum(upf["Runs"]["genEventSumw"].array())
+
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+                        results = list(executor.map(process_file, files))
+                    
+                    num_events = sum(results)
                 else:
                     num_events = 1.0
                 self.config["samples"].update(
                     {
                         f"{sample_name}_{sample_year}": {
                             "trees": ["Events"],
-                            "files": [f"{sample}/output*.root"],
+                            "files": [f"{sample}/output_3*.root"],
                             "metadata": {
                                 "sample_category": self.sample_category,
                                 "sample_year": sample_year,
-                                "sample_type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "SingleMuon" if "SingleMuon" in sample_name else "SingleElectron",
+                                "sample_type": self.extract_mc_sample_type(sample_name) if self.sample_category != "data" else "Muon" if "Muon" in sample_name else "Electron",
                                 "xsec": xsec,
                                 "lumi": self.get_lumi(sample_year) if self.sample_category != "data" else 1.0,
                                 "nevents": num_events
@@ -122,10 +122,8 @@ if __name__ == "__main__":
         xsecs = json.load(f_xsecs)
 
     skim_paths = {
-        "bkg": "/ceph/cms/store/user/aaarora/VBS_1lep_skims/bkg_1lep_4ak4_or_1ak8_2ak4_v1/*",
-        "data": "/ceph/cms/store/user/aaarora/VBS_1lep_skims/data_1lep_4ak4_or_1ak8_2ak4_v1/*",
-        "sig": "/ceph/cms/store/user/aaarora/VBS_1lep_skims/sig_1lep_4ak4_or_1ak8_2ak4_v1/*/*/NANOAODSIM/*/*/skimmed/*.root",
-        "sig_private": "/ceph/cms/store/user/jguiang/VBSVHSkim/sig_1lep_4ak4_or_1ak8_2ak4_v1/*Inclusive*/*.root"
+        "bkg": "/ceph/cms/store/user/aaarora/skims/bkg/*/*",
+        "data": "/ceph/cms/store/user/aaarora/skims/data/*/*"
     }
 
     config = Config(args.category, skim_paths[args.category])

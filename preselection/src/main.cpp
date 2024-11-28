@@ -12,7 +12,6 @@ struct MyArgs : public argparse::Args {
     std::string &spec = kwarg("i,input", "spec.json path");
     bool &cutflow = flag("cutflow", "print cutflow");
     bool &JEC = flag("jec", "JEC");
-    bool &JER = flag("jer", "JER");
     bool &JMS = flag("jms", "JMS");
     bool &JMR = flag("jmr", "JMR");
     bool &METUnclustered = flag("met", "MET unclustered");
@@ -23,56 +22,57 @@ struct MyArgs : public argparse::Args {
     std::string &cut = kwarg("cut", "cut on final snapshot").set_default("passCut9");
 };
 
-void runDataAnalysis(RNode df, MyArgs args, std::string output_file) {
-    auto df_ = defineCorrectedCols(df);
-    auto df1 = ObjectSelections(df_);
-    auto df_metcorr = METPhiCorrections(cset_met_2016preVFP, cset_met_2016postVFP, cset_met_2017, cset_met_2018, df1);
-    auto df_event = EventSelections(df_metcorr);
-    auto df_weights = applyDataWeights(df_event);
+void runDataAnalysis(RNode df_, MyArgs args, std::string output_file) {
+    auto df = defineCorrectedCols(df_);
+    df = ObjectSelections(df);
+    df = EventSelections(df);
+    df = applyDataWeights(df);
     
-    std::vector<std::string> cuts = {"passCut1", "passCut2", "passCut3", "passCut4", "passCut5", "passCut6", "passCut7", "passCut8", "passCut9", "passCut8_cr", "passCut9_cr"};
-    auto cutflow = Cutflow(df_weights, cuts);
+    // std::vector<std::string> cuts = {"passCut1", "passCut2", "passCut3", "passCut4", "passCut5", "passCut6", "passCut7", "passCut8", "passCut9", "passCut8_cr", "passCut9_cr"};
+    // auto cutflow = Cutflow(df, cuts);
 
-    df_weights = df_weights.Filter(args.cut);
-    saveSnapshot(df_weights, std::string(output_file), true);
+    df = df.Filter(args.cut);
+    saveSnapshot(df, std::string(output_file), true);
 
-    if (args.cutflow) {
-        cutflow.Print("cutflow/" + output_file + "_cutflow.txt");
-    }
+    // if (args.cutflow) {
+    //     cutflow.Print("cutflow/" + output_file + "_cutflow.txt");
+    // }
 }
 
-void runMCAnalysis(RNode df, MyArgs args, std::string output_file) {
+void runMCAnalysis(RNode df_, MyArgs args, std::string output_file) {
     // corrections
-    auto df_ = defineCorrectedCols(df);
-    auto df1 = ObjectSelections(df_);
+    auto df = defineCorrectedCols(df_);
+    df = ObjectSelections(df);
+    
     // apply pre preselection corrections
-    df1 = METPhiCorrections(cset_met_2016preVFP, cset_met_2016postVFP, cset_met_2017, cset_met_2018, df1);
-    if (args.JER) {
-        df1 = JetEnergyResolution(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, cset_jer_smear, df1, args.variation);
-    } else if (args.METUnclustered) {
-        df1 = METUnclusteredCorrections(df1, args.variation);
-    } else if (args.JEC) {
-        df1 = JetEnergyCorrection(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, df1, args.JEC_type, args.variation);
-    }
     
-    auto df_event = EventSelections(df1);
+    // df = METPhiCorrections(cset_met_2016preVFP, cset_met_2016postVFP, cset_met_2017, cset_met_2018, df1);
+    // df = JetEnergyResolution(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, cset_jer_smear, df1, args.variation);
+    // } else if (args.METUnclustered) {
+    //     df = METUnclusteredCorrections(df1, args.variation);
+    // } else if (args.JEC) {
+    //     df = JetEnergyCorrection(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, df1, args.JEC_type, args.variation);
+    // }
+    
+    df = EventSelections(df);
 
-    if (args.JMS) {
-        df_event = JMS_Corrections(cset_jms, df_event, args.variation);
-    } else if (args.JMR) {
-        df_event = JMR_Corrections(cset_jmr, df_event, args.variation);
-    }
-    auto df_weights = applyMCWeights(df_event);
+    // if (args.JMS) {
+    //     df_event = JMS_Corrections(cset_jms, df_event, args.variation);
+    // } else if (args.JMR) {
+    //     df_event = JMR_Corrections(cset_jmr, df_event, args.variation);
+    // }
     
-    std::vector<std::string> cuts = {"passCut1", "passCut2", "passCut3", "passCut4", "passCut5", "passCut6", "passCut7", "passCut8", "passCut9", "passCut8_cr", "passCut9_cr"};
-    auto cutflow = Cutflow(df_weights, cuts);
+    df = applyMCWeights(df);
     
-    df_weights = df_weights.Filter(args.cut);
-    saveSnapshot(df_weights, std::string(output_file));
+    // std::vector<std::string> cuts = {"passCut1", "passCut2", "passCut3", "passCut4", "passCut5", "passCut6", "passCut7", "passCut8", "passCut9", "passCut8_cr", "passCut9_cr"};
+    // auto cutflow = Cutflow(df_weights, cuts);
+    
+    df = df.Filter(args.cut);
+    saveSnapshot(df, std::string(output_file));
 
-    if (args.cutflow){
-        cutflow.Print("cutflow/" + output_file + "_cutflow.txt");
-    }
+    // if (args.cutflow){
+        // cutflow.Print("cutflow/" + output_file + "_cutflow.txt");
+    // }
 }
 
 int main(int argc, char** argv) {

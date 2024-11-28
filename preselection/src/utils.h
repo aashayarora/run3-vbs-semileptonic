@@ -20,6 +20,12 @@ using ROOT::VecOps::RVec;
 using ROOT::RDF::RSampleInfo;
 
 /*
+    METADATA DEFINE
+*/
+
+RNode defineMetadata(RNode df);
+
+/*
     LUMIMASK
 */
 
@@ -96,12 +102,6 @@ private:
     std::vector<std::string> _cuts;
     std::vector<std::pair<ROOT::RDF::RResultPtr<double>, ROOT::RDF::RResultPtr<double>>> _cutflow;
 };
-
-/*
-    METADATA DEFINE
-*/
-
-RNode defineMetadata(RNode df);
 
 /*
     SELECTION UTILS

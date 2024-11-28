@@ -16,11 +16,15 @@ class DataCard:
         self.bdt = bdt
 
         self.data_df = r.RDataFrame("Events", data).Filter("abs(weight) < 100")
+        if (self.year != None):
+            self.data_df = self.data_df.Filter(f"sample_year == \"{self.year}\"")
         self.data_pdf = pd.DataFrame(self.data_df.AsNumpy(["weight", "VBSBDTscore", "abcdnet_score"]))
-
+        
         self.sig_base = sig
         self.sig_df = r.RDataFrame("Events", self.sig_base + "sig_MVA.root").Filter("abs(weight) < 100")
-        
+        if (self.year != None):
+            self.sig_df = self.sig_df.Filter(f"sample_year == \"{self.year}\"")
+
         if (c2v != -1):
             self.sig_df = self.sig_df.Redefine("weight", f"weight * LHEReweightingWeight[{c2v}]")
 
@@ -47,19 +51,19 @@ class DataCard:
         else:
             a = round(self.data_pdf.query(f"VBSBDTscore > {self.bdt} & abcdnet_score > {self.dnn}").weight.sum())
             a_up = round(gamma.ppf(1- (1-0.9973) / 2, a+1))
-            a_dn = round(gamma.ppf((1 - 0.9973) / 2, a))
+            a_dn = round(gamma.ppf((1 - 0.9973) / 2, a)) if a > 0 else 0
 
         b = round(self.data_pdf.query(f"VBSBDTscore > {self.bdt} & abcdnet_score < {self.dnn}").weight.sum())
         b_up = round(gamma.ppf(1- (1-0.9973) / 2, b+1))
-        b_dn = round(gamma.ppf((1 - 0.9973) / 2, b))
+        b_dn = round(gamma.ppf((1 - 0.9973) / 2, b)) if b > 0 else 0
         
         c = round(self.data_pdf.query(f"VBSBDTscore < {self.bdt} & abcdnet_score > {self.dnn}").weight.sum())
         c_up = round(gamma.ppf(1- (1-0.9973) / 2, c+1))
-        c_dn = round(gamma.ppf((1 - 0.9973) / 2, c))
+        c_dn = round(gamma.ppf((1 - 0.9973) / 2, c)) if c > 0 else 0
         
         d = round(self.data_pdf.query(f"VBSBDTscore < {self.bdt} & abcdnet_score < {self.dnn}").weight.sum())
         d_up = round(gamma.ppf(1- (1-0.9973) / 2, d+1))
-        d_dn = round(gamma.ppf((1 - 0.9973) / 2, d))
+        d_dn = round(gamma.ppf((1 - 0.9973) / 2, d)) if d > 0 else 0
 
         return {"A": (a, a_dn, a_up), "B": (b, b_dn, b_up), "C": (c, c_dn, c_up), "D": (d, d_dn, d_up)}
 
