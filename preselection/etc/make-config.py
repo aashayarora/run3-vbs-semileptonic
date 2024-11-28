@@ -73,14 +73,14 @@ class Config:
 
     def process_samples(self, xsecs):
         for sample in self.samples:
-            print(sample)
             try:
                 sample_name = self.get_sample_name(sample)
                 sample_year = self.extract_sample_year(sample)
                 xsec = self.get_xsec_weight(xsecs, sample_name) if self.sample_category != "data" else 1.0
                 num_events = 0
+                files_path = f"{sample}/output_*.root"
                 if self.sample_category != "data":
-                    files = glob(f"{sample}/output_3*.root")
+                    files = glob(files_path)
                     def process_file(file):
                         with uproot.open(file) as upf:
                             return sum(upf["Runs"]["genEventSumw"].array())
@@ -95,7 +95,7 @@ class Config:
                     {
                         f"{sample_name}_{sample_year}": {
                             "trees": ["Events"],
-                            "files": [f"{sample}/output_3*.root"],
+                            "files": [files_path],
                             "metadata": {
                                 "sample_category": self.sample_category,
                                 "sample_year": sample_year,
