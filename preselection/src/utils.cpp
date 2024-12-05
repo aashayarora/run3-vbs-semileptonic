@@ -1,22 +1,26 @@
 #include "utils.h"
 
 /*
-    DEFINE METADATA
+############################################
+DEFINE METADATA
+############################################
 */
 
 RNode defineMetadata(RNode df){
     return df.DefinePerSample("xsec", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("xsec");})
-            .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
-            .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
-            .DefinePerSample("sample_category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_category");})
-            .DefinePerSample("sample_type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_type");})
-            .DefinePerSample("sample_year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_year");})
-            .Define("xsec_weight", "1000 * xsec * lumi / nevents")
-            .Define("isData", "sample_category == \"data\"");
+        .DefinePerSample("lumi", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("lumi");})
+        .DefinePerSample("nevents", [](unsigned int slot, const RSampleInfo &id) { return id.GetD("nevents");})
+        .DefinePerSample("sample_category", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_category");})
+        .DefinePerSample("sample_type", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_type");})
+        .DefinePerSample("sample_year", [](unsigned int slot, const RSampleInfo &id) { return id.GetS("sample_year");})
+        .Define("xsec_weight", "1000 * xsec * lumi / nevents")
+        .Define("isData", "sample_category == \"data\"");
 }
 
 /*
-    LUMIMASK
+############################################
+LUMIMASK
+############################################
 */
 
 bool operator< ( const lumiMask::LumiBlockRange& lh, const lumiMask::LumiBlockRange& rh )
@@ -46,7 +50,9 @@ lumiMask lumiMask::fromJSON(const std::string& file, lumiMask::Run firstRun, lum
 }
 
 /*
-    DUPLICATE REMOVAL
+############################################
+REMOVE DUPLICATES
+############################################
 */
 
 RNode removeDuplicates(RNode df){
@@ -54,7 +60,9 @@ RNode removeDuplicates(RNode df){
 }
 
 /*
-    CUTFLOW
+############################################
+CUTFLOW
+############################################
 */
 
 Cutflow::Cutflow(RNode df, const std::vector<std::string>& cuts) : _df(df), _cuts(cuts){
@@ -84,7 +92,9 @@ void Cutflow::Print(std::string output_file) {
 }
 
 /*
-    SELECTION UTILS
+############################################
+SELECTION UTILS
+############################################
 */
 
 RVec<float> VfDeltaR (RVec<float> vec_eta, RVec<float> vec_phi, float obj_eta, float obj_phi) { 
@@ -105,9 +115,10 @@ RVec<float> VfDeltaR (RVec<float> vec_eta, RVec<float> vec_phi, float obj_eta, f
 
 RVec<float> VfInvariantMass(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> vec_phi, RVec<float> vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass) {
     RVec<float> invMass = {};
+    TLorentzVector obj1;
+    obj1.SetPtEtaPhiM(obj_pt, obj_eta, obj_phi, obj_mass);
     for (size_t i = 0; i < vec_pt.size(); i++) {
-        TLorentzVector obj1, obj2;
-        obj1.SetPtEtaPhiM(obj_pt, obj_eta, obj_phi, obj_mass);
+        TLorentzVector obj2;
         obj2.SetPtEtaPhiM(vec_pt[i], vec_eta[i], vec_phi[i], vec_mass[i]);
         invMass.push_back((obj1 + obj2).M());
     }
@@ -116,9 +127,10 @@ RVec<float> VfInvariantMass(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float>
 
 RVec<float> VfInvariantPt(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> vec_phi, RVec<float> vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass) {
     RVec<float> invMass = {};
+    TLorentzVector obj1;
+    obj1.SetPtEtaPhiM(obj_pt, obj_eta, obj_phi, obj_mass);
     for (size_t i = 0; i < vec_pt.size(); i++) {
-        TLorentzVector obj1, obj2;
-        obj1.SetPtEtaPhiM(obj_pt, obj_eta, obj_phi, obj_mass);
+        TLorentzVector obj2;
         obj2.SetPtEtaPhiM(vec_pt[i], vec_eta[i], vec_phi[i], vec_mass[i]);
         invMass.push_back((obj1 + obj2).Pt());
     }
@@ -127,9 +139,10 @@ RVec<float> VfInvariantPt(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> v
 
 RVec<float> VfInvariantPhi(RVec<float> vec_pt, RVec<float> vec_eta, RVec<float> vec_phi, RVec<float> vec_mass, float obj_pt, float obj_eta, float obj_phi, float obj_mass) {
     RVec<float> invMass = {};
+    TLorentzVector obj1;
+    obj1.SetPtEtaPhiM(obj_pt, obj_eta, obj_phi, obj_mass);
     for (size_t i = 0; i < vec_pt.size(); i++) {
-        TLorentzVector obj1, obj2;
-        obj1.SetPtEtaPhiM(obj_pt, obj_eta, obj_phi, obj_mass);
+        TLorentzVector obj2;
         obj2.SetPtEtaPhiM(vec_pt[i], vec_eta[i], vec_phi[i], vec_mass[i]);
         invMass.push_back((obj1 + obj2).Phi());
     }
@@ -223,6 +236,12 @@ RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_
     }
     return good_jet_idx;
 }
+
+/*
+############################################
+SNAPSHOT
+############################################
+*/
 
 void saveSnapshot(RNode df, const std::string& finalFile, bool isData) {
     auto ColNames = df.GetDefinedColumnNames();

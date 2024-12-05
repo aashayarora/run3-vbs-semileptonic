@@ -123,67 +123,67 @@ RNode VqqSelections(RNode df_) {
             .Define("xwqq_tau21", "xwqq_tau2 / xwqq_tau1");
 }
 
-RNode AK4Selections(RNode df_) {
-    return df_.Define("AK4LepDeltaR", VfDeltaR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
-            .Define("AK4XbbDeltaR", VfDeltaR, { "Jet_eta", "Jet_phi", "xbb_eta", "xbb_phi"})
-            .Define("AK4XWqqDeltaR", VfDeltaR, {"Jet_eta", "Jet_phi", "xwqq_eta", "xwqq_phi"})
-            .Define("ak4tightBjetScore", tightDFBtagWP, {"sample_year"})
-            .Define("ak4looseBjetScore", looseDFBtagWP, {"sample_year"})
-            .Define("goodJets", "CorrJet_pt >= 20 && "
-                "abs(Jet_eta) < 2.5 && "
-                "AK4LepDeltaR >= 0.4 && "
-                "AK4XbbDeltaR >= 0.8 && "
-                "AK4XWqqDeltaR >= 0.8 && "
-                "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2)) && "
-                "(CorrJet_pt >= 50 || (CorrJet_pt < 50 && Jet_puId != 0))")
-            .Define("ak4FromBJet", "goodJets && Jet_btagDeepFlavB > ak4tightBjetScore")
-            .Define("goodLooseBJets", "goodJets && Jet_btagDeepFlavB > ak4looseBjetScore")
-            .Define("sortedBJets", "Argsort(-Jet_btagDeepFlavB[goodLooseBJets])")
-            .Define("GBJet_pt", "Take(CorrJet_pt[goodLooseBJets], sortedBJets)")
-            .Define("GBJet_eta", "Take(Jet_eta[goodLooseBJets], sortedBJets)")
-            .Define("GBJet_phi", "Take(Jet_phi[goodLooseBJets], sortedBJets)")
-            .Define("GBJet_mass", "Take(CorrJet_mass[goodLooseBJets], sortedBJets)")
-            .Define("GBJet_score", "Take(Jet_btagDeepFlavB[goodLooseBJets], sortedBJets)")
-            .Define("bjet1pt", "GBJet_pt.size() > 0 ? GBJet_pt[0] : -999")
-            .Define("bjet1eta", "GBJet_pt.size() > 0 ? GBJet_eta[0] : -999")
-            .Define("bjet1phi", "GBJet_pt.size() > 0 ? GBJet_phi[0] : -999")
-            .Define("bjet1score", "GBJet_pt.size() > 0 ? GBJet_score[0] : -999")
-            .Define("bjet2pt", "GBJet_pt.size() > 1 ? GBJet_pt[1] : -999")
-            .Define("bjet2eta", "GBJet_pt.size() > 1 ? GBJet_eta[1] : -999")
-            .Define("bjet2phi", "GBJet_pt.size() > 1 ? GBJet_phi[1] : -999")
-            .Define("bjet2score", "GBJet_pt.size() > 1 ? GBJet_score[1] : -999")
-            .Define("Mlb", VfInvariantMass, {"GBJet_pt", "GBJet_eta", "GBJet_phi", "GBJet_mass", "lepton_pt", "lepton_eta", "lepton_phi", "lepton_mass"})
-            .Define("MinMlbJetIdx", "Mlb.size() != 0 ? ArgMin(Mlb) : -1")
-            .Define("Mlbminloose", "Mlb.size() != 0 ? Mlb[MinMlbJetIdx] : 1000");
-}
+// RNode AK4Selections(RNode df_) {
+//     return df_.Define("AK4LepDeltaR", VfDeltaR, {"Jet_eta", "Jet_phi", "lepton_eta", "lepton_phi"})
+//             .Define("AK4XbbDeltaR", VfDeltaR, { "Jet_eta", "Jet_phi", "xbb_eta", "xbb_phi"})
+//             .Define("AK4XWqqDeltaR", VfDeltaR, {"Jet_eta", "Jet_phi", "xwqq_eta", "xwqq_phi"})
+//             .Define("ak4tightBjetScore", tightDFBtagWP, {"sample_year"})
+//             .Define("ak4looseBjetScore", looseDFBtagWP, {"sample_year"})
+//             .Define("goodJets", "CorrJet_pt >= 20 && "
+//                 "abs(Jet_eta) < 2.5 && "
+//                 "AK4LepDeltaR >= 0.4 && "
+//                 "AK4XbbDeltaR >= 0.8 && "
+//                 "AK4XWqqDeltaR >= 0.8 && "
+//                 "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2)) && "
+//                 "(CorrJet_pt >= 50 || (CorrJet_pt < 50 && Jet_puId != 0))")
+//             .Define("ak4FromBJet", "goodJets && Jet_btagDeepFlavB > ak4tightBjetScore")
+//             .Define("goodLooseBJets", "goodJets && Jet_btagDeepFlavB > ak4looseBjetScore")
+//             .Define("sortedBJets", "Argsort(-Jet_btagDeepFlavB[goodLooseBJets])")
+//             .Define("GBJet_pt", "Take(CorrJet_pt[goodLooseBJets], sortedBJets)")
+//             .Define("GBJet_eta", "Take(Jet_eta[goodLooseBJets], sortedBJets)")
+//             .Define("GBJet_phi", "Take(Jet_phi[goodLooseBJets], sortedBJets)")
+//             .Define("GBJet_mass", "Take(CorrJet_mass[goodLooseBJets], sortedBJets)")
+//             .Define("GBJet_score", "Take(Jet_btagDeepFlavB[goodLooseBJets], sortedBJets)")
+//             .Define("bjet1pt", "GBJet_pt.size() > 0 ? GBJet_pt[0] : -999")
+//             .Define("bjet1eta", "GBJet_pt.size() > 0 ? GBJet_eta[0] : -999")
+//             .Define("bjet1phi", "GBJet_pt.size() > 0 ? GBJet_phi[0] : -999")
+//             .Define("bjet1score", "GBJet_pt.size() > 0 ? GBJet_score[0] : -999")
+//             .Define("bjet2pt", "GBJet_pt.size() > 1 ? GBJet_pt[1] : -999")
+//             .Define("bjet2eta", "GBJet_pt.size() > 1 ? GBJet_eta[1] : -999")
+//             .Define("bjet2phi", "GBJet_pt.size() > 1 ? GBJet_phi[1] : -999")
+//             .Define("bjet2score", "GBJet_pt.size() > 1 ? GBJet_score[1] : -999")
+//             .Define("Mlb", VfInvariantMass, {"GBJet_pt", "GBJet_eta", "GBJet_phi", "GBJet_mass", "lepton_pt", "lepton_eta", "lepton_phi", "lepton_mass"})
+//             .Define("MinMlbJetIdx", "Mlb.size() != 0 ? ArgMin(Mlb) : -1")
+//             .Define("Mlbminloose", "Mlb.size() != 0 ? Mlb[MinMlbJetIdx] : 1000");
+// }
 
-RNode VBSJetsSelections(RNode df_) {
-    return df_.Define("goodVBSJets", "CorrJet_pt >= 30 && "
-                "abs(Jet_eta) <= 4.7 && "
-                "AK4LepDeltaR >= 0.4 && "
-                "AK4XbbDeltaR >= 0.8 && "
-                "AK4XWqqDeltaR >= 0.8 && "
-                "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2)) && "
-                "(CorrJet_pt >= 50 || (CorrJet_pt < 50 && Jet_puId != 0))")
-            .Define("VBSJets_pt", "CorrJet_pt[goodVBSJets]")
-            .Define("VBSJets_eta", "Jet_eta[goodVBSJets]")
-            .Define("VBSJets_phi", "Jet_phi[goodVBSJets]")
-            .Define("VBSJets_mass", "CorrJet_mass[goodVBSJets]")
-            .Define("VBSjetidxs", VBS_MaxE, {"VBSJets_pt", "VBSJets_eta", "VBSJets_phi", "VBSJets_mass"})
-            .Define("vbs1_pt", "VBSJets_pt[VBSjetidxs[0]]")
-            .Define("vbs1_eta", "VBSJets_eta[VBSjetidxs[0]]")
-            .Define("vbs1_phi", "VBSJets_phi[VBSjetidxs[0]]")
-            .Define("vbs1_mass", "VBSJets_mass[VBSjetidxs[0]]")
-            .Define("vbs2_pt", "VBSJets_pt[VBSjetidxs[1]]")
-            .Define("vbs2_eta", "VBSJets_eta[VBSjetidxs[1]]")
-            .Define("vbs2_phi", "VBSJets_phi[VBSjetidxs[1]]")
-            .Define("vbs2_mass", "VBSJets_mass[VBSjetidxs[1]]")
-            .Define("vbs_ptjj", "VBSjet1pt + VBSjet2pt")
-            .Define("vbs_detajj", "abs(VBSjet1eta - VBSjet2eta)")
-            .Define("vbs_mjj", fInvariantMass, {"VBSjet1pt", "VBSjet1eta", "VBSjet1phi", "VBSjet1mass", "VBSjet2pt", "VBSjet2eta", "VBSjet2phi", "VBSjet2mass"})
-            .Define("met", "CorrMET_pt")
-            .Define("ST", "lepton_pt + met + xbb_pt + xwqq_pt");
-}
+// RNode VBSJetsSelections(RNode df_) {
+//     return df_.Define("goodVBSJets", "CorrJet_pt >= 30 && "
+//                 "abs(Jet_eta) <= 4.7 && "
+//                 "AK4LepDeltaR >= 0.4 && "
+//                 "AK4XbbDeltaR >= 0.8 && "
+//                 "AK4XWqqDeltaR >= 0.8 && "
+//                 "((is2016 && Jet_jetId >= 1) || (!is2016 && Jet_jetId >= 2)) && "
+//                 "(CorrJet_pt >= 50 || (CorrJet_pt < 50 && Jet_puId != 0))")
+//             .Define("VBSJets_pt", "CorrJet_pt[goodVBSJets]")
+//             .Define("VBSJets_eta", "Jet_eta[goodVBSJets]")
+//             .Define("VBSJets_phi", "Jet_phi[goodVBSJets]")
+//             .Define("VBSJets_mass", "CorrJet_mass[goodVBSJets]")
+//             .Define("VBSjetidxs", VBS_MaxE, {"VBSJets_pt", "VBSJets_eta", "VBSJets_phi", "VBSJets_mass"})
+//             .Define("vbs1_pt", "VBSJets_pt[VBSjetidxs[0]]")
+//             .Define("vbs1_eta", "VBSJets_eta[VBSjetidxs[0]]")
+//             .Define("vbs1_phi", "VBSJets_phi[VBSjetidxs[0]]")
+//             .Define("vbs1_mass", "VBSJets_mass[VBSjetidxs[0]]")
+//             .Define("vbs2_pt", "VBSJets_pt[VBSjetidxs[1]]")
+//             .Define("vbs2_eta", "VBSJets_eta[VBSjetidxs[1]]")
+//             .Define("vbs2_phi", "VBSJets_phi[VBSjetidxs[1]]")
+//             .Define("vbs2_mass", "VBSJets_mass[VBSjetidxs[1]]")
+//             .Define("vbs_ptjj", "VBSjet1pt + VBSjet2pt")
+//             .Define("vbs_detajj", "abs(VBSjet1eta - VBSjet2eta)")
+//             .Define("vbs_mjj", fInvariantMass, {"VBSjet1pt", "VBSjet1eta", "VBSjet1phi", "VBSjet1mass", "VBSjet2pt", "VBSjet2eta", "VBSjet2phi", "VBSjet2mass"})
+//             .Define("met", "CorrMET_pt")
+//             .Define("ST", "lepton_pt + met + xbb_pt + xwqq_pt");
+// }
 
 RNode ObjectSelections(RNode df_) {
     auto df = METFilters(df_);
@@ -191,8 +191,8 @@ RNode ObjectSelections(RNode df_) {
     df = LeptonSelections(df);
     df = HbbSelections(df);
     df = VqqSelections(df);
-    df = AK4Selections(df);
-    df = VBSJetsSelections(df);
+    // df = AK4Selections(df);
+    // df = VBSJetsSelections(df);
     return df; 
 }
 
@@ -203,11 +203,11 @@ RNode EventSelections(RNode df_) {
             "(lepton_pt > 40)")
         .Define("passCut3", "passCut2 && HighestHScore > 0")
         .Define("passCut4", "passCut3 && HighestWjetScore > 0")
-        .Define("passCut5", "passCut4 && Sum(ak4FromBJet) == 0")
-        .Define("passCut6", "passCut5 && Sum(goodVBSJets) >= 2")
-        .Define("passCut7", "passCut6 && ST > 1000")
-        .Define("passCut8", "passCut7 && HighestHScore > 0.5")
-        .Define("passCut9", "passCut8 && HighestWjetScore > 0.7")
-        .Define("passCut8_cr", "passCut7 && HighestHScore < 0.95")
-        .Define("passCut9_cr", "passCut8_cr && HighestWjetScore < 0.7");
+        // .Define("passCut5", "passCut4 && Sum(ak4FromBJet) == 0")
+        // .Define("passCut6", "passCut5 && Sum(goodVBSJets) >= 2")
+        // .Define("passCut7", "passCut6 && ST > 1000")
+        // .Define("passCut8", "passCut7 && HighestHScore > 0.5")
+        // .Define("passCut9", "passCut8 && HighestWjetScore > 0.7")
+        // .Define("passCut8_cr", "passCut7 && HighestHScore < 0.95")
+        // .Define("passCut9_cr", "passCut8_cr && HighestWjetScore < 0.7");
 }

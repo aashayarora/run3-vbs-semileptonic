@@ -127,12 +127,12 @@ OTHER SFs
 ############################################
 */
 
-// RNode applyL1PreFiringReweighting(RNode df);
-// RNode applyPSWeight_FSR(RNode df);
-// RNode applyPSWeight_ISR(RNode df);
-// RNode applyLHEScaleWeight_muF(RNode df);
-// RNode applyLHEScaleWeight_muR(RNode df);
-// RNode applyLHEWeights_pdf(RNode df);
+RNode applyL1PreFiringReweighting(RNode df);
+RNode applyPSWeight_FSR(RNode df);
+RNode applyPSWeight_ISR(RNode df);
+RNode applyLHEScaleWeight_muF(RNode df);
+RNode applyLHEScaleWeight_muR(RNode df);
+RNode applyLHEWeights_pdf(RNode df);
 
 RNode applyDataWeights(RNode df);
 RNode applyMCWeights(RNode df);

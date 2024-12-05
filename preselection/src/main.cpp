@@ -10,15 +10,14 @@
 
 struct MyArgs : public argparse::Args {
     std::string &spec = kwarg("i,input", "spec.json path");
+    int &nthreads = kwarg("n,nthreads", "number of threads").set_default(1);
     bool &cutflow = flag("cutflow", "print cutflow");
-    bool &JEC = flag("jec", "JEC");
     bool &JMS = flag("jms", "JMS");
     bool &JMR = flag("jmr", "JMR");
     bool &METUnclustered = flag("met", "MET unclustered");
-    int &nthreads = kwarg("n,nthreads", "number of threads").set_default(1);
+    std::string &jec = kwarg("jec").set_default("");
     std::string &output = kwarg("o,output", "output root file").set_default("");
     std::string &variation = kwarg("var", "variation").set_default("nominal");
-    std::string &JEC_type = kwarg("jec_type", "JEC type").set_default("");
     std::string &cut = kwarg("cut", "cut on final snapshot").set_default("passCut9");
 };
 
@@ -50,8 +49,8 @@ void runMCAnalysis(RNode df_, MyArgs args, std::string output_file) {
     // df = JetEnergyResolution(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, cset_jer_smear, df1, args.variation);
     // } else if (args.METUnclustered) {
     //     df = METUnclusteredCorrections(df1, args.variation);
-    // } else if (args.JEC) {
-    //     df = JetEnergyCorrection(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, df1, args.JEC_type, args.variation);
+    // } else if (!args.jec.empty()) {
+    //     df = JetEnergyCorrection(cset_jerc_2016preVFP, cset_jerc_2016postVFP, cset_jerc_2017, cset_jerc_2018, df1, args.jec, args.variation);
     // }
     
     df = EventSelections(df);

@@ -20,13 +20,17 @@ using ROOT::VecOps::RVec;
 using ROOT::RDF::RSampleInfo;
 
 /*
-    METADATA DEFINE
+############################################
+DEFINE METADATA
+############################################
 */
 
 RNode defineMetadata(RNode df);
 
 /*
-    LUMIMASK
+############################################
+LUMIMASK
+############################################
 */
 
 class lumiMask {
@@ -62,9 +66,10 @@ private:
 
 bool operator< ( const lumiMask::LumiBlockRange& lh, const lumiMask::LumiBlockRange& rh );
 
-
 /*
-    DUPLICATE REMOVAL
+############################################
+REMOVE DUPLICATES
+############################################
 */
 
 class FilterOnePerKind {
@@ -90,7 +95,9 @@ public:
 RNode removeDuplicates(RNode df);
 
 /*
-    CUTFLOW
+############################################
+CUTFLOW
+############################################
 */
 
 class Cutflow {
@@ -104,7 +111,9 @@ private:
 };
 
 /*
-    SELECTION UTILS
+############################################
+SELECTION UTILS
+############################################
 */
 
 RVec<float> VfDeltaR (RVec<float> vec_eta, RVec<float> vec_phi, float obj_eta, float obj_phi);
@@ -115,6 +124,12 @@ RVec<float> MT(RVec<float> vec_pt, RVec<float> vec_phi, float obj_pt, float obj_
 float fInvariantMass(float obj1_pt, float obj1_eta, float obj1_phi, float obj1_mass, float obj2_pt, float obj2_eta, float obj2_phi, float obj2_mass);
 RVec<int> VBS_MaxE( RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass );
 RVec<int> VBS_MaxEtaJJ(RVec<float> Jet_pt, RVec<float> Jet_eta, RVec<float> Jet_phi, RVec<float> Jet_mass);
+
+/*
+############################################
+SNAPSHOT
+############################################
+*/
 
 void saveSnapshot(RNode df, const std::string& finalFile, bool isData=false);
 
